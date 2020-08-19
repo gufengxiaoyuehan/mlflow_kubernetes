@@ -1,0 +1,7 @@
+version: "3"
+services:
+  mlflow-base:
+    build:
+      context: ""
+      dockerfile: mlflow.dockerfile
+    image: mlflow-base
