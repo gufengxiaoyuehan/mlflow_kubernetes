@@ -21,7 +21,7 @@ or install from source code:
 
 .. code-block:: bash
 
-    pip install git+ssh://git@codeup.teambition.com/fusiontree/...#egg=mlflow-kubernetes
+    pip install git+ssh://git@codeup.teambition.com/fusiontree/fusionplatform/mllfow-kubernetes#egg=mlflow-kubernetes
 
 
 usage
