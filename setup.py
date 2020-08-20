@@ -21,11 +21,11 @@ setup(
         'server': [
             'docker',
             'redis',
-            'mlflow@git+ssh://git@codeup.teambition.com/fusiontree/fusionplatform/mlflow.git@dev',
-            'git'
+            'gitpython',
+            'mlflow@git+ssh://git@codeup.teambition.com/fusiontree/fusionplatform/mlflow.git@dev#egg=mlflow',
         ]
     },
     entry_points={
-        "console_scripts": "mlflowkube=mlflow_kubernetes.cli"
+        "console_scripts": "mlflowkube=mlflow_kubernetes.cli:cli"
     },
 )
