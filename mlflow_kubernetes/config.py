@@ -16,7 +16,7 @@ MLFLOW_MODEL_DEFAULT_TARGET_PORT = 8080
 KUBE_AUTH_TOKEN = os.environ.get("KUBE_AUTH_TOKEN", None)
 
 # base image path used build mlflow model image
-MLFLOW_MODEL_BASE_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'server', 'dockerfile')
+MLFLOW_MODEL_BASE_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'deployments', 'dockerfile')
 MLFLOW_MODEL_BASE_IMAGE_DOCKERFILE = 'mlflow.dockerfile'
 
 # mlflow models published uri

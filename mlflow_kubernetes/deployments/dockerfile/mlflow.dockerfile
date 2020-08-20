@@ -20,4 +20,4 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV GUNICORN_CMD_ARGS="--timeout 60 -k gevent"
 ADD mirrors/settings.xml /etc/maven/settings.xml
 ADD mirrors/.condarc /etc/conda/.condarc
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
