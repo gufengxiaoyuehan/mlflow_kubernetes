@@ -1,6 +1,4 @@
-import subprocess
-from collections import namedtuple
-import os
+import urllib.parse
 import os
 import tempfile
 from collections import namedtuple
@@ -66,10 +64,21 @@ def _install_image_base_if_not_exists(client: docker.DockerClient, image_name):
     try:
         client.images.get(name=image_name)
     except docker.errors.ImageNotFound:
-        logger.debug('base image "mlflow-base" not exists, build it')
-        client.images.build(path=config.MLFLOW_MODEL_BASE_IMAGE_PATH,
+        logger.debug('base image "mlflow-base" not exists, build it in %s \nusing'
+                     ' dockerfile %s\n', config.MLFLOW_MODEL_BASE_IMAGE_PATH,
+                     config.MLFLOW_MODEL_BASE_IMAGE_DOCKERFILE)
+        client.images.build(tag=image_name, path=config.MLFLOW_MODEL_BASE_IMAGE_PATH,
                             dockerfile=config.MLFLOW_MODEL_BASE_IMAGE_DOCKERFILE )
 
+
+def _clone_mlflow_from_codeup(dest_path):
+    logger.info("clone mlflow from codeup %s@%s to %s", CODEUP_FORKED_MLFLOW,
+                CODEUP_FORKED_MLFLOW_BRANCH, dest_path)
+
+    git.Repo.clone_from(
+        CODEUP_FORKED_MLFLOW, dest_path,
+        single_branch=True, branch=CODEUP_FORKED_MLFLOW_BRANCH
+    )
 
 class DockerModelImageRegistry:
     """
@@ -111,14 +120,21 @@ class DockerModelImageRegistry:
         build and push image from uri to registry
         :return:
         """
-        _install_image_base_if_not_exists(self.client, image_name=self._base_image)
-        self.build_image_local_from_model_uri(uri, self._base_image, **kwargs)
-        self.push_image_to_repository()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            home_dir = os.path.join(tmpdir, 'mlflow')
+            _install_image_base_if_not_exists(self.client, image_name=self._base_image)
+            _clone_mlflow_from_codeup(home_dir)
+            is_done = self.build_image_local_from_model_uri(uri, self._base_image, home_dir, **kwargs)
+            if is_done:
+                self.push_image_to_repository()
+            raise RuntimeError('docker image not build successfully')
 
-    def build_image_local_from_model_uri(self, model_uri, base_image, **kwargs):
+    def build_image_local_from_model_uri(self, model_uri, base_image, mlflow_home=None,  **kwargs):
         """build PythonModel Backed service image from model_uri
 
         :param base_image: image base from which  build  model image
+        :param mlflow_home: mllfow local copy used to startup the model service in container
+                            if None install from pip.
         :param model_uri: directory contains pyfunc model filesystem.
                           <"pyfunc-filename-system"
                           https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#pyfunc-filename-system>_
@@ -142,18 +158,11 @@ class DockerModelImageRegistry:
             if not flavor_backend.can_build_image():
                 raise AttributeError('flavor {} not support build image'.format(flavor_name))
 
-            mlflow_clone_path = os.path.join(tmp_dir, 'mlflow')
-            logger.info("clone mlflow from codeup %s@%s to %s", CODEUP_FORKED_MLFLOW,
-                        CODEUP_FORKED_MLFLOW_BRANCH, mlflow_clone_path)
-
-            git.Repo.clone_from(
-                CODEUP_FORKED_MLFLOW, mlflow_clone_path,
-                single_branch=True, branch=CODEUP_FORKED_MLFLOW_BRANCH
-            )
-            return flavor_backend.build_image(
+            return_code =  flavor_backend.build_image(
                 model_uri, self.image_name,
-                mlflow_home=mlflow_clone_path, base_image=base_image
+                mlflow_home=mlflow_home, base_image=base_image
             )
+            return True if not return_code else False
 
     def push_image_to_repository(self):
         """push image to registry. used docker local settings
