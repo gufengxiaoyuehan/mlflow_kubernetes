@@ -58,7 +58,6 @@ class MessageBus:
         should distinct different topics
         """
         while self._run:
-            time.sleep(1)
             topic, message = self.get_message()
             if message:
                 try:
@@ -77,6 +76,7 @@ class MessageBus:
         incoming event handle
         """
         for handler in self._handlers[topic]:
+            logging.info('handle [] handle %s with message:\n%s', handler, topic, event)
             messages = handler.handle(topic, event)
 
             if messages:
@@ -124,9 +124,7 @@ class RedisMessageBus(MessageBus):
 
     def get_message(self):
         while True:
-            print('get message')
             response = next(self._message_generator)
-            print('receive')
             topic = response['channel']
             if topic:
                 return topic, json.loads(response['data'])
