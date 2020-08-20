@@ -25,6 +25,10 @@ CODEUP_FORKED_MLFLOW = 'git+ssh://codeup.teambition.com/fusiontree/fusionplatfor
 CODEUP_FORKED_MLFLOW_BRANCH = 'dev'
 
 
+# build image tries
+MAX_TRIES = 3
+
+
 def get_docker_registry_info(uri):
     """build docker registry info from uri or environment
     """
@@ -118,16 +122,22 @@ class DockerModelImageRegistry:
     def create_image_from_uri(self, uri, **kwargs):
         """
         build and push image from uri to registry
+        try ``MAX_TRIES`` times if there connection issues when building image
         :return:
         """
         with tempfile.TemporaryDirectory() as tmpdir:
             home_dir = os.path.join(tmpdir, 'mlflow')
             _install_image_base_if_not_exists(self.client, image_name=self._base_image)
             _clone_mlflow_from_codeup(home_dir)
-            is_done = self.build_image_local_from_model_uri(uri, self._base_image, home_dir, **kwargs)
-            if is_done:
-                self.push_image_to_repository()
-            raise RuntimeError('docker image not build successfully')
+
+            for i in range(MAX_TRIES):
+                logger.info('try build image %s [%s/%s]', self.image_name, i, MAX_TRIES)
+                is_done = self.build_image_local_from_model_uri(uri, self._base_image, home_dir, **kwargs)
+                if is_done:
+                    self.push_image_to_repository()
+                    break
+            else:
+                raise RuntimeError('docker image %s not build successfully', self.image_name )
 
     def build_image_local_from_model_uri(self, model_uri, base_image, mlflow_home=None,  **kwargs):
         """build PythonModel Backed service image from model_uri
