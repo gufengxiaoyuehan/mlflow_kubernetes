@@ -1,7 +1,8 @@
 import os
 
 # constant and environment variable
-
+# DOCKER REGISTRY used to pull or push images deployed in kubernetes
+DOCKER_REGISTRY_TARGET = os.environ.get('DOCKER_REGISTRY_URI')
 # kuberenetes
 KUBERNETES_CONFIG_PATH = os.environ.get('KUBERNETES_CONFIG_PATH', None)
 # expose port for each pod

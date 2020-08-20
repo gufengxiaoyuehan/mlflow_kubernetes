@@ -25,23 +25,24 @@ CODEUP_FORKED_MLFLOW = 'git+ssh://codeup.teambition.com/fusiontree/fusionplatfor
 CODEUP_FORKED_MLFLOW_BRANCH = 'dev'
 
 
-def docker_registry_info_from_env():
-    """docker registry info used to push and pull images, 
-    
-    author info:
-    username, password. 
-    
-    regsitry info:
-
-    registry: registry image save to, like **registry.cn-hangzhou.aliyuncs.com**
-    namespace image belongs to, default to username
+def get_docker_registry_info(uri):
+    """build docker registry info from uri or environment
     """
-    username = os.environ["DOCKER_USERNAME"]
-    password = os.environ["DOCKER_PASSWORD"]
-    registry_uri = os.environ.get('DOCKER_REGISTRY_URI')
-    namespace = os.environ.get('DOCKER_NAMESPACE') or username
-    return RegistryInfo(username, password, registry_uri, namespace)
+    if not uri:
+        uri = os.environ.get('DOCKER_REGISTRY_URI')
+    registry_scheme = urllib.parse.urlparse(uri)
 
+    namespace = registry_scheme.path.lstrip('/') if registry_scheme.path else registry_scheme.username
+
+    host_port = registry_scheme.hostname
+
+    if registry_scheme.port:
+        host_port = '{}:{}'.format(host_port, int(registry_scheme.port))
+
+    return RegistryInfo(
+        registry_scheme.username, registry_scheme.password,
+        host_port, namespace
+    )
 
 def _generate_normal_name_for_repositry(image_name, registry_info):
     """
@@ -72,15 +73,17 @@ class DockerModelImageRegistry:
     sync it model with docker registry.
     """
 
-    def __init__(self, image_name, registry_info: RegistryInfo):
+    def __init__(self, image_name, registry_uri, image_tag='latest'):
         """
 
         :param image_name:
-        :param registry_info:
+        :param image_tag:
+        :param registry_uri:
         """
-        self.registry_info = registry_info
+        self.registry_info = get_docker_registry_info(registry_uri)
         self._client = None
         self._image_name = image_name
+        self._image_tag = image_tag
         self._base_image = IMAGE_BASE
 
     @property

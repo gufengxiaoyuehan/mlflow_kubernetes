@@ -43,7 +43,10 @@ configuration can expose by environment variables and through ``config`` module.
 
 **docker**
 
-    not provide now, assumption of all configuration runing this module had been set properly
+``DOCKER_REGISTRY_URI``:
+
+    dockerhub or private registry fetch images from and pushing to. models download from mlflow will register
+    to this repository and kubernetes will used it as image repository to build pod from.
 
 **message bus**
 
@@ -69,7 +72,7 @@ can access the kubernetes cluster overwrite by environment variable or input par
 
 for example::
 
-    mlflowkube models server --model-events-uri redis://host:port \
+    mlflowkube models server --model-events-uri redis://host:port --docker-registry-uri \
       --kubernetes-config-path ~/path/to/kubernetes/config
 
 

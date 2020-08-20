@@ -8,17 +8,17 @@ from mlflow.exceptions import MlflowException
 from mlflow_kubernetes import logger
 # not import variables directly, as we expects users will change them
 from mlflow_kubernetes import config
-from mlflow_kubernetes.deployments.model_registry import DockerModelImageRegistry, docker_registry_info_from_env
+from mlflow_kubernetes.deployments.model_registry import DockerModelImageRegistry
 
 canonical_name_pattern = re.compile(r"[a-zA-Z0-9\-.]+")
 
 
-class KubernetesDeployment():
-    def __init__(self, target_uri, kube_config_path=None) -> None:
-        super().__init__(target_uri)
+class KubernetesDeployment:
+    def __init__(self, docker_registry_uri, kube_config_path=None) -> None:
         kube_config.load_kube_config(config_file=kube_config_path)
         self._core_api = client.CoreV1Api()
         self._apps_api = client.AppsV1Api()
+        self._docker_registry_uri = docker_registry_uri
 
     def create_deployment(self, name, model_uri, flavor=None, config=None):
         """
@@ -44,8 +44,7 @@ class KubernetesDeployment():
 
         if self.get_deployment(canonical_name):
             raise MlflowException('service {} already exists'.format(canonical_name))
-        registry_info = docker_registry_info_from_env()
-        docker_registry = DockerModelImageRegistry(canonical_name, registry_info)
+        docker_registry = DockerModelImageRegistry(canonical_name, self._docker_registry_uri, version)
         docker_registry.create_image_from_uri(model_uri)
         self.create_kube_deployment_with_service(canonical_name, docker_registry.image_name)
 
