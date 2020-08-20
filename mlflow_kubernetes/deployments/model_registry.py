@@ -16,6 +16,8 @@ from mlflow.utils.uri import append_to_uri_path
 from mlflow_kubernetes import config
 from mlflow_kubernetes.logger import logger
 
+# registry: registry image save to, like **registry.cn-hangzhou.aliyuncs.com**
+# namespace: image belongs to, default to username
 RegistryInfo = namedtuple('RegistryInfo', 'username password registry namespace')
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -44,17 +46,19 @@ def get_docker_registry_info(uri):
         host_port, namespace
     )
 
-def _generate_normal_name_for_repositry(image_name, registry_info):
+
+def _generate_normal_name_for_repositry(image_name, registry_info, image_tag='latest'):
     """
     convert image_name to a legal name for specified registry
     :param image_name: name that not conform to registry rules
     :param registry_info: registry information about remote registry
+    :param image_tag: image version
     :return: noramlized name
     """
     prefix = '{registory_host}/{namespace}'.format(registory_host=registry_info.registry,
                                                    namespace=registry_info.namespace)
     if not image_name.startswith(prefix):
-        image_name = '{}/{}'.format(prefix, image_name)
+        image_name = '{}/{}:{}'.format(prefix, image_name, image_tag)
     return image_name
 
 
@@ -89,7 +93,7 @@ class DockerModelImageRegistry:
     @property
     def image_name(self):
         """canonical image name """
-        return _generate_normal_name_for_repositry(self._image_name, self.registry_info)
+        return _generate_normal_name_for_repositry(self._image_name, self.registry_info, self._image_tag)
 
     @property
     def client(self) -> docker.DockerClient:

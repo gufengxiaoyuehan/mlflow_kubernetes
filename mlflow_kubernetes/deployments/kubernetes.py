@@ -20,7 +20,7 @@ class KubernetesDeployment:
         self._apps_api = client.AppsV1Api()
         self._docker_registry_uri = docker_registry_uri
 
-    def create_deployment(self, name, model_uri, flavor=None, config=None):
+    def create_deployment(self, name, version, model_uri):
         """
         create a combination of kubernetes service, deployment that provide
         predict service for specified flavor model
@@ -28,10 +28,7 @@ class KubernetesDeployment:
         :param name: Unique name to use for deployment. If another deployment exists with the same
                      name, raises a :py:class:`mlflow.exceptions.MlflowException`
         :param model_uri: URI of model to deploy
-        :param flavor: (optional) Model flavor to deploy. If unspecified, a default flavor
-                       will be chosen.
-        :param config: (optional) Dict containing updated target-specific configuration for the
-                       deployment
+        :param version: model unique version, it is unique in model's evolve workflow
         :return: Dict corresponding to created deployment, which must contain the 'name' key.
         """
         if not canonical_name_pattern.match(name):
@@ -42,11 +39,13 @@ class KubernetesDeployment:
         else:
             canonical_name = name
 
-        if self.get_deployment(canonical_name):
+        canonical_name_version = '{}-{}'.format(canonical_name, version)
+
+        if self.get_deployment(canonical_name_version):
             raise MlflowException('service {} already exists'.format(canonical_name))
         docker_registry = DockerModelImageRegistry(canonical_name, self._docker_registry_uri, version)
         docker_registry.create_image_from_uri(model_uri)
-        self.create_kube_deployment_with_service(canonical_name, docker_registry.image_name)
+        self.create_kube_deployment_with_service(canonical_name_version, docker_registry.image_name)
 
     def get_deployment(self, name):
         try:
