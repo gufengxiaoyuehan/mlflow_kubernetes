@@ -10,6 +10,7 @@ setup(
     description='mlflow model auto-deploy to kubernetes and SaaS',
     long_description=long_description,
     url='http://codeup.teambition.com/',
+    packages=['mlflow_kubernetes',],
     zip_safe=False,
     install_requires=[
         'kubernetes',
