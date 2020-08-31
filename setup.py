@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as f:
     long_description = f.read()
@@ -10,7 +10,7 @@ setup(
     description='mlflow model auto-deploy to kubernetes and SaaS',
     long_description=long_description,
     url='http://codeup.teambition.com/',
-    packages=['mlflow_kubernetes',],
+    packages=find_packages(),
     zip_safe=False,
     install_requires=[
         'kubernetes',
