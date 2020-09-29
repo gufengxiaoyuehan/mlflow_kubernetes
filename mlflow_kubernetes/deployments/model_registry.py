@@ -168,8 +168,9 @@ class DockerModelImageRegistry:
             if not flavor_backend.can_build_image():
                 raise AttributeError('flavor {} not support build image'.format(flavor_name))
 
-            return_code =  flavor_backend.build_image(
-                model_uri, self.image_name,
+            # always intall mlflow for override office mlflow package in container
+            return_code = flavor_backend.build_image(
+                model_uri, self.image_name, install_mlflow=True,
                 mlflow_home=mlflow_home, base_image=base_image
             )
             return True if not return_code else False
