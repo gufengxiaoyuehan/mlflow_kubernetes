@@ -21,3 +21,5 @@ ENV GUNICORN_CMD_ARGS="--timeout 60 -k gevent"
 ADD mirrors/settings.xml /etc/maven/settings.xml
 ADD mirrors/.condarc /etc/conda/.condarc
 RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+# install custom packages list in modified mlflow
+RUN pip install redis
