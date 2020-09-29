@@ -17,4 +17,4 @@ class ModelCreateHandler:
         self.kube_deployment.create_deployment(model_name, model_version, model_uri)
 
     def handle(self, topic, event):
-        return getattr(self, 'handle_' +  topic)(event)
+        return getattr(self, 'handle_' + topic)(event)

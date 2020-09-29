@@ -72,7 +72,7 @@ can access the kubernetes cluster overwrite by environment variable or input par
 
 for example::
 
-    mlflowkube models server --model-events-uri redis://host:port --docker-registry-uri \
+    mlflowkube models server --model-events-target redis://host:port --docker-registry-target \
       --kubernetes-config-path ~/path/to/kubernetes/config
 
 

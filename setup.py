@@ -1,7 +1,18 @@
+import os
+
 from setuptools import setup, find_packages
 
 with open('README.rst') as f:
     long_description = f.read()
+
+
+def package_files(directory):
+    paths = []
+    for (path, _, filenames) in os.walk(directory):
+        for filename in filenames:
+            paths.append(os.path.join("..", path, filename))
+    return paths
+
 
 setup(
     name='mlflow-kubernetes',
@@ -11,6 +22,7 @@ setup(
     long_description=long_description,
     url='http://codeup.teambition.com/',
     packages=find_packages(),
+    package_data={"": package_files("mlflow_kubernetes/deployments/dockerfile")},
     zip_safe=False,
     install_requires=[
         'kubernetes',
