@@ -63,7 +63,6 @@ class KubernetesDeployment:
             ports=[client.V1ContainerPort(container_port=config.MLFLOW_MODEL_DEFAULT_TARGET_PORT, name=name)],
             resources=client.V1ResourceRequirements(
                 requests={"cpu": "100m", "memory": "200Mi"},
-                limits={"cpu": "500m", "memory": "500Mi"}
             )
         )
         # Create and configurate a spec section
