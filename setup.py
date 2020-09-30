@@ -16,7 +16,7 @@ def package_files(directory):
 
 setup(
     name='mlflow-kubernetes',
-    version='0.1.0',
+    version='0.2.0',
     author='logan',
     description='mlflow model auto-deploy to kubernetes and SaaS',
     long_description=long_description,
