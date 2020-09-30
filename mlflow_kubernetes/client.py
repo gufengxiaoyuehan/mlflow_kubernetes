@@ -8,6 +8,7 @@ from kubernetes import config as kube_config, client
 # not import variables directly, as we expects users will change them
 from . import config
 
+
 def _df_to_dict(df: pandas.DataFrame):
     data = dict(columns=df.columns.to_list())
     data['data'] = df.values.tolist()
